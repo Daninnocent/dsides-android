@@ -3241,37 +3241,34 @@ class PlayState extends MusicBeatState
 					var directionsAccounted:Array<Bool> = [false,false,false,false]; // we don't want to do judgments for more than one presses
 					
 					notes.forEachAlive(function(daNote:Note)
-					{
-						if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit)
 						{
-							if (!directionsAccounted[daNote.noteData % 4])
+							if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit && !directionsAccounted[daNote.noteData])
 							{
-								if (directionList.contains(daNote.noteData % 4))
-								{
-									directionsAccounted[daNote.noteData % 4] = true;
-									for (coolNote in possibleNotes)
+								if (directionList.contains(daNote.noteData))
 									{
-										if (coolNote.noteData == (daNote.noteData % 4) && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
-										{ // if it's the same note twice at < 10ms distance, just delete it
-											// EXCEPT u cant delete it in this loop cuz it fucks with the collection lol
-											dumbNotes.push(daNote);
-											break;
-										}
-										else if (coolNote.noteData == (daNote.noteData % 4) && daNote.strumTime < coolNote.strumTime)
-										{ // if daNote is earlier than existing note (coolNote), replace
-											possibleNotes.remove(coolNote);
-											possibleNotes.push(daNote);
-											break;
+										directionsAccounted[daNote.noteData] = true;
+										for (coolNote in possibleNotes)
+										{
+											if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
+											{ // if it's the same note twice at < 10ms distance, just delete it
+												// EXCEPT u cant delete it in this loop cuz it fucks with the collection lol
+												dumbNotes.push(daNote);
+												break;
+											}
+											else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
+											{ // if daNote is earlier than existing note (coolNote), replace
+												possibleNotes.remove(coolNote);
+												possibleNotes.push(daNote);
+												break;
+											}
 										}
 									}
-								}
-								else
-								{
-									possibleNotes.push(daNote);
-									directionList.push(daNote.noteData % 4);
-								}
+									else
+									{
+										possibleNotes.push(daNote);
+										directionList.push(daNote.noteData);
+									}
 							}
-						}
 					});
 
 					trace('\nCURRENT LINE:\n' + directionsAccounted);
