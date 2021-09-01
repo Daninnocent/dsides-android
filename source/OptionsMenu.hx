@@ -59,8 +59,12 @@ class OptionsMenu extends MusicBeatState
 			new FlashingLightsOption("Toggle flashing lights that can cause epileptic seizures and strain."),
 			new WatermarkOption("Enable and disable all watermarks from the engine."),
 			new BotPlay("Showcase your charts and mods with autoplay.")
-		])
+		]),
 		
+		new OptionCategory("Mobile Settings", [
+			new CustomControls("Customize your controls for your android device!")
+		])
+
 	];
 
 	public var acceptInput:Bool = true;
@@ -110,6 +114,10 @@ class OptionsMenu extends MusicBeatState
 
 		FlxTween.tween(versionShit,{y: FlxG.height - 18},2,{ease: FlxEase.elasticInOut});
 		FlxTween.tween(blackBorder,{y: FlxG.height - 18},2, {ease: FlxEase.elasticInOut});
+
+		#if mobileC
+		addVirtualPad(FULL, A_B);
+		#end
 
 		super.create();
 	}

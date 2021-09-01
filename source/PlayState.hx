@@ -53,6 +53,7 @@ import lime.utils.Assets;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+import ui.Mobilecontrols;
 
 #if windows
 import Discord.DiscordClient;
@@ -92,6 +93,7 @@ class PlayState extends MusicBeatState
 
 	var songLength:Float = 0;
 	var kadeEngineWatermark:FlxText;
+	var daninnocentTxt:FlxText;
 	
 	#if windows
 	// Discord RPC variables
@@ -211,6 +213,10 @@ class PlayState extends MusicBeatState
 	private var saveNotes:Array<Float> = [];
 
 	private var executeModchart = false;
+
+	#if mobileC
+	var mcontrols:Mobilecontrols; 
+	#end
 
 	// API stuff
 	
@@ -1179,6 +1185,13 @@ class PlayState extends MusicBeatState
 		{
 			add(replayTxt);
 		}
+		daninnocentTxt = new FlxText(876, 648, 348);
+        daninnocentTxt.text = "PORTED BY DANINNOCENT";
+        daninnocentTxt.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
+        daninnocentTxt.scrollFactor.set();
+        add(daninnocentTxt);
+
+
 		// Literally copy-paste of the above, fu
 		botPlayState = new FlxText(healthBarBG.x + healthBarBG.width / 2 - 75, healthBarBG.y + (FlxG.save.data.downscroll ? 100 : -100), 0, "BOTPLAY", 20);
 		botPlayState.setFormat(Paths.font("vcr.ttf"), 42, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
@@ -1202,6 +1215,7 @@ class PlayState extends MusicBeatState
 		iconP2.cameras = [camHUD];
 		scoreTxt.cameras = [camHUD];
 		doof.cameras = [camHUD];
+		daninnocentTxt.cameras = [camHUD];
 		if (FlxG.save.data.songPosition)
 		{
 			songPosBG.cameras = [camHUD];
@@ -1210,6 +1224,29 @@ class PlayState extends MusicBeatState
 		kadeEngineWatermark.cameras = [camHUD];
 		if (loadRep)
 			replayTxt.cameras = [camHUD];
+
+		#if mobileC
+			mcontrols = new Mobilecontrols();
+			switch (mcontrols.mode)
+			{
+				case VIRTUALPAD_RIGHT | VIRTUALPAD_LEFT | VIRTUALPAD_CUSTOM:
+					controls.setVirtualPad(mcontrols._virtualPad, FULL, NONE);
+				case HITBOX:
+					controls.setHitBox(mcontrols._hitbox);
+				default:
+			}
+			trackedinputs = controls.trackedinputs;
+			controls.trackedinputs = [];
+
+			var camcontrol = new FlxCamera();
+			FlxG.cameras.add(camcontrol);
+			camcontrol.bgColor.alpha = 0;
+			mcontrols.cameras = [camcontrol];
+
+			mcontrols.visible = false;
+
+			add(mcontrols);
+		#end
 
 		// if (SONG.song == 'South')
 		// FlxG.camera.alpha = 0.7;
@@ -1412,6 +1449,10 @@ class PlayState extends MusicBeatState
 
 	function startCountdown():Void
 	{
+		#if mobileC
+		mcontrols.visible = true;
+		#end
+
 		inCutscene = false;
 
 		generateStaticArrows(0);
@@ -2083,7 +2124,7 @@ class PlayState extends MusicBeatState
 		if (!FlxG.save.data.accuracyDisplay)
 			scoreTxt.text = "Score: " + songScore;
 
-		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)
+		if (FlxG.keys.justPressed.ENTER  #if android || FlxG.android.justReleased.BACK #end  && startedCountdown && canPause)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
@@ -2709,14 +2750,18 @@ class PlayState extends MusicBeatState
 
 	function endSong():Void
 	{
-		if (!loadRep)
+		#if mobileC
+		mcontrols.visible = false;
+		#end
+
+		/*if (!loadRep)
 			rep.SaveReplay(saveNotes);
 		else
 		{
 			FlxG.save.data.botplay = false;
 			FlxG.save.data.scrollSpeed = 1;
 			FlxG.save.data.downscroll = false;
-		}
+		}*/
 
 		if (FlxG.save.data.fpsCap > 290)
 			(cast (Lib.current.getChildAt(0), Main)).setFPSCap(290);
